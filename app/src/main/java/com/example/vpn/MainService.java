@@ -40,7 +40,7 @@ public class MainService extends Service {
     private static final int ID_SERVICE = 105;
     VpnProfile profile;
     MqttHandler mqttHandler;
-    String brokerAddress = "tcp://192.168.1.101";
+    String brokerAddress = "tcp://localhost";
     Gson gson = new Gson();
     private final IConnectivityManager mService = IConnectivityManager.Stub.asInterface(
             ServiceManager.getService(Context.CONNECTIVITY_SERVICE));
@@ -52,14 +52,28 @@ public class MainService extends Service {
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-
+        MqttCallbackHandler mqttCallbackHandler = null;
         try {
-            mqttHandler = new MqttHandler(brokerAddress,"Sharif");
-            mqttHandler.connectToMqttBroker(new MqttCallbackHandler(mqttHandler.getMqttClient(),new String[]{"vpn/request"}, getApplicationContext()));
+            mqttHandler = new MqttHandler(brokerAddress,"Sharif2");
+            mqttCallbackHandler = new MqttCallbackHandler(mqttHandler.getMqttClient(),new String[]{"vpn/request"}, getApplicationContext());
+            mqttHandler.connectToMqttBroker(mqttCallbackHandler);
         } catch (MqttException e) {
             e.printStackTrace();
         }
-        System.out.println(mqttHandler.mqttClient.isConnected());
+        MqttCallbackHandler finalMqttCallbackHandler = mqttCallbackHandler;
+        Thread brokerConnector = new Thread(()->{
+            while (true){
+                if (!finalMqttCallbackHandler.isConnected()) {
+                    mqttHandler.connectToMqttBroker(finalMqttCallbackHandler);
+                    try {
+                        Thread.sleep(10000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        });
+        brokerConnector.start();
         return START_STICKY;
     }
     public void onDestroy() {
@@ -192,9 +206,8 @@ public class MainService extends Service {
                     }
                 }
                 else {
-                    Stop();
+//                    Stop();
                 }
-
             }
         }
 
