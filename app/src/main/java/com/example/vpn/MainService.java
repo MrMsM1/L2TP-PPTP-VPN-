@@ -231,9 +231,24 @@ public class MainService extends Service {
         parcel.writeString(input[7]); //searchDomains
         parcel.writeString(input[8]); //routes
         parcel.writeInt(Boolean.parseBoolean(input[9]) ? 1 : 0); //mppe
-        parcel.writeString(input[10]); //l2tpSecret
-        parcel.writeString(input[11]); //ipsecIdentifier
-        parcel.writeString(input[12]); //ipsecSecret
+        if (input[10] == null){
+            parcel.writeString(""); //l2tpSecret
+        } else {
+            parcel.writeString(input[10]); //l2tpSecret
+        }
+
+        if (input[11] == null){
+            parcel.writeString(""); //ipsecIdentifier
+        } else {
+            parcel.writeString(input[11]); //ipsecIdentifier
+        }
+
+        if (input[12] == null){
+            parcel.writeString(""); //ipsecSecret
+        } else {
+            parcel.writeString(input[12]); //ipsecSecret
+        }
+
         parcel.writeString(input[13]); //ipsecUserCert
         parcel.writeString(input[14]); //ipsecCaCert
         parcel.writeString(input[15]); //ipsecServerCert
